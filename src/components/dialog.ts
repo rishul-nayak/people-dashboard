@@ -16,6 +16,8 @@ export function useDialog<T extends HTMLElement>(onClose: () => void) {
     const before = document.activeElement as HTMLElement | null;
     const focusable = () =>
       Array.from(el?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])') ?? []);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     focusable()[0]?.focus();
 
     const onKey = (e: KeyboardEvent) => {
@@ -30,6 +32,7 @@ export function useDialog<T extends HTMLElement>(onClose: () => void) {
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
       if (before && document.contains(before)) before.focus();
     };
   }, []);

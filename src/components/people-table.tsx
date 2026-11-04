@@ -6,7 +6,7 @@ import { TIER_DAYS } from "@/lib/config";
 import type { Data, Person } from "@/lib/types";
 import { daysBetween, niceDate } from "@/lib/util";
 
-const field = "rounded-[10px] border border-line bg-card px-3 py-2.5 text-[16px]";
+const field = "field";
 
 function Status({ p, today }: { p: Person; today: string }) {
   if ((TIER_DAYS[p.tier] ?? 0) === 0) return <span className="text-ink-2">No reminders</span>;
@@ -15,6 +15,25 @@ function Status({ p, today }: { p: Person; today: string }) {
   if (late > 0) return <span className="pill bad">{late} day{late === 1 ? "" : "s"} late</span>;
   if (late === 0) return <span className="pill watch">Today</span>;
   return <span className="text-ink-2">{niceDate(p.nextContact)}</span>;
+}
+
+/** How long since you talked, against how often this tier should hear from you. */
+function Since({ p, today }: { p: Person; today: string }) {
+  if (!p.lastContact) return <span className="text-ink-2">Never</span>;
+  const every = TIER_DAYS[p.tier] ?? 0;
+  const since = daysBetween(p.lastContact, today);
+  const share = every > 0 ? Math.min(since / every, 1) : 0;
+  const color = since >= every ? "var(--bad)" : since >= every * 0.75 ? "var(--watch)" : "var(--ink-2)";
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="tnum text-ink-2">{since === 0 ? "Today" : `${since} day${since === 1 ? "" : "s"} ago`}</span>
+      {every > 0 && (
+        <span aria-hidden className="block h-1 w-16 overflow-hidden rounded-full bg-line">
+          <span className="block h-full rounded-full" style={{ width: `${share * 100}%`, background: color }} />
+        </span>
+      )}
+    </div>
+  );
 }
 
 export function PeopleTable({ data, onOpen }: { data: Data; onOpen: (id: string) => void }) {
@@ -97,12 +116,13 @@ export function PeopleTable({ data, onOpen }: { data: Data; onOpen: (id: string)
                 <th scope="col" className="px-4 py-3 font-medium">Tier</th>
                 <th scope="col" className="px-4 py-3 font-medium">World</th>
                 <th scope="col" className="hidden px-4 py-3 font-medium lg:table-cell">Company</th>
+                <th scope="col" className="px-4 py-3 font-medium">Last talked</th>
                 <th scope="col" className="py-3 pl-4 font-medium">Next contact</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((p) => (
-                <tr key={p.id} onClick={() => onOpen(p.id)} className="cursor-pointer border-b border-line last:border-0 hover:bg-soft">
+                <tr key={p.id} onClick={() => onOpen(p.id)} className="h-[60px] cursor-pointer border-b border-line last:border-0 hover:bg-soft">
                   <td className="max-w-[320px] py-3 pr-4 font-medium">
                     <button onClick={(e) => { e.stopPropagation(); onOpen(p.id); }} className="block max-w-full truncate border-0 bg-transparent p-0 text-left font-medium text-ink">
                       {p.name}
@@ -111,6 +131,7 @@ export function PeopleTable({ data, onOpen }: { data: Data; onOpen: (id: string)
                   <td className="px-4 py-3"><span className="pill plain">{p.tier}</span></td>
                   <td className="px-4 py-3 text-ink-2">{p.world}</td>
                   <td className="hidden px-4 py-3 text-ink-2 lg:table-cell">{p.company || <span aria-label="No company">–</span>}</td>
+                  <td className="px-4 py-3"><Since p={p} today={data.today} /></td>
                   <td className="py-3 pl-4"><Status p={p} today={data.today} /></td>
                 </tr>
               ))}

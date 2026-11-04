@@ -51,6 +51,15 @@ export function Dashboard({ data }: { data: Data }) {
     setDark(!dark);
   };
 
+  const onTabKey = (e: React.KeyboardEvent) => {
+    const i = TABS.findIndex((t) => t.id === tab);
+    const n = e.key === "ArrowRight" ? (i + 1) % TABS.length : e.key === "ArrowLeft" ? (i + TABS.length - 1) % TABS.length : e.key === "Home" ? 0 : e.key === "End" ? TABS.length - 1 : -1;
+    if (n < 0) return;
+    e.preventDefault();
+    setTab(TABS[n].id);
+    document.getElementById(`tab-${TABS[n].id}`)?.focus();
+  };
+
   const close = useCallback(() => setSelected(null), []);
   const person = data.people.find((p) => p.id === selected) || null;
 
@@ -91,7 +100,7 @@ export function Dashboard({ data }: { data: Data }) {
         </div>
       </header>
 
-      <div role="tablist" aria-label="Sections" className="flex gap-6 border-b border-line">
+      <div role="tablist" aria-label="Sections" onKeyDown={onTabKey} className="flex gap-6 border-b border-line">
         {TABS.map(({ id, label }) => (
           <button
             key={id}
@@ -99,6 +108,7 @@ export function Dashboard({ data }: { data: Data }) {
             role="tab"
             aria-selected={tab === id}
             aria-controls="panel"
+            tabIndex={tab === id ? 0 : -1}
             onClick={() => setTab(id)}
             className={`-mb-px border-0 border-b-2 bg-transparent px-0 py-3 text-[16px] font-medium ${tab === id ? "border-ink text-ink" : "border-transparent text-ink-2 hover:text-ink"}`}
           >

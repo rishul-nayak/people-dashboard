@@ -41,7 +41,7 @@ export default function Login() {
           onChange={(e) => setValue(e.target.value)}
           placeholder="Passcode"
           aria-label="Passcode"
-          className="rounded-[10px] border border-line bg-card px-3 py-2.5 text-[16px]"
+          className="field"
         />
         {error && <p className="text-[13px] text-bad" role="alert">Wrong passcode. Try again.</p>}
         <button type="submit" disabled={busy || !value} className="btn-main">

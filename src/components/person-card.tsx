@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ExternalLink, Link as LinkIcon, Mail, Pencil, Phone, Trash2, X } from "lucide-react";
+import { Check, ExternalLink, Link as LinkIcon, Mail, Pencil, Phone, Trash2 } from "lucide-react";
 import { TIER_DAYS } from "@/lib/config";
 import type { Data, Person } from "@/lib/types";
 import { daysBetween, niceDate, notionUrl, relative } from "@/lib/util";
 import { call, useAct } from "./act";
-import { useDialog } from "./dialog";
+import { Drawer } from "./drawer";
 import { PersonForm } from "./person-form";
 
 function Field({ label, text }: { label: string; text: string }) {
@@ -38,8 +38,6 @@ export function PersonCard({ person, data, onClose }: { person: Person; data: Da
   const [who, setWho] = useState<"Me" | "Them">("Me");
   const { run, busy, error } = useAct();
 
-  const panel = useDialog<HTMLElement>(onClose);
-
   const next = nextLabel(person, data.today);
   const recent = data.interactions
     .filter((i) => i.personIds.includes(person.id))
@@ -58,25 +56,7 @@ export function PersonCard({ person, data, onClose }: { person: Person; data: Da
   }
 
   return (
-    <>
-      <div className="fixed inset-0 z-30 bg-black/30 sm:bg-transparent" onClick={onClose} aria-hidden />
-      <aside
-        ref={panel}
-        role="dialog"
-        aria-modal="true"
-        className="fade fixed right-0 top-0 z-40 flex h-full w-full flex-col gap-4 overflow-y-auto border-l border-line bg-card p-5 shadow-[0_0_40px_rgba(0,0,0,.12)] sm:w-[420px]"
-        aria-label={`${person.name} details`}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="text-[22px] leading-tight">{person.name}</h2>
-            {sub && <div className="text-ink-2">{sub}</div>}
-          </div>
-          <button className="btn btn-icon shrink-0" onClick={onClose} aria-label="Close">
-            <X size={18} aria-hidden />
-          </button>
-        </div>
-
+    <Drawer label={`${person.name} details`} title={person.name} subtitle={sub} onClose={onClose}>
         {editing ? (
           <>
             <PersonForm person={person} onDone={() => setEditing(false)} onCancel={() => setEditing(false)} />
@@ -174,9 +154,9 @@ export function PersonCard({ person, data, onClose }: { person: Person; data: Da
                       onChange={(e) => setWhat(e.target.value)}
                       placeholder="Add a promise"
                       aria-label="Add a promise"
-                      className="min-w-0 flex-1 rounded-[10px] border border-line bg-card px-3 py-2 text-[16px]"
+                      className="field min-w-0 flex-1"
                     />
-                    <select value={who} onChange={(e) => setWho(e.target.value as "Me" | "Them")} aria-label="Who owes" className="rounded-[10px] border border-line bg-card px-2 py-2 text-[16px]">
+                    <select value={who} onChange={(e) => setWho(e.target.value as "Me" | "Them")} aria-label="Who owes" className="field">
                       <option value="Me">I owe</option>
                       <option value="Them">They owe</option>
                     </select>
@@ -225,7 +205,6 @@ export function PersonCard({ person, data, onClose }: { person: Person; data: Da
             </div>
           </>
         )}
-      </aside>
-    </>
+    </Drawer>
   );
 }

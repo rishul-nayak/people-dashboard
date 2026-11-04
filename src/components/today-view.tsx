@@ -74,7 +74,7 @@ export function TodayView({ data, onOpen }: { data: Data; onOpen: (id: string) =
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid gap-x-12 gap-y-10 lg:grid-cols-2">
+      <div className="grid gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Section title="Message these people" count={pings.length}>
           {pings.length === 0 && <p className="m-0 text-ink-2">No one is due. Send a WhatsApp note about someone you met.</p>}
           <ul className="m-0 flex list-none flex-col p-0">

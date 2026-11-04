@@ -4,7 +4,7 @@
 :root {
   --bg: #fff; --soft: #f9f9f9; --card: #fff;
   --ink: rgba(0,0,0,.9); --ink-2: rgba(0,0,0,.6); --ink-3: rgba(0,0,0,.47);
-  --line: rgba(0,0,0,.12); --shadow: 0 4px 20px rgba(0,0,0,.075);
+  --line: rgba(0,0,0,.12);
   --clay: #d97757; --clay-strong: #b9562f;
   --good: #006c10; --good-bg: rgba(16,161,34,.14);
   --bad: #a42528; --bad-bg: rgba(220,60,61,.12);
@@ -16,7 +16,7 @@
   :root:not([data-theme="light"]) {
     --bg: #151515; --soft: #0b0b0b; --card: #1f1f1f;
     --ink: rgba(255,255,255,.93); --ink-2: rgba(255,255,255,.57); --ink-3: rgba(255,255,255,.4);
-    --line: rgba(255,255,255,.12); --shadow: none;
+    --line: rgba(255,255,255,.12);
     --good: #53c556; --bad: #f17778; --watch: #e49c06;
     --w1: #3987e5; --w2: #d95926; --w3: #199e70; --w-other: #77776f;
     color-scheme: dark;
@@ -25,7 +25,7 @@
 :root[data-theme="dark"] {
   --bg: #151515; --soft: #0b0b0b; --card: #1f1f1f;
   --ink: rgba(255,255,255,.93); --ink-2: rgba(255,255,255,.57); --ink-3: rgba(255,255,255,.4);
-  --line: rgba(255,255,255,.12); --shadow: none;
+  --line: rgba(255,255,255,.12);
   --good: #53c556; --bad: #f17778; --watch: #e49c06;
   --w1: #3987e5; --w2: #d95926; --w3: #199e70; --w-other: #77776f;
   color-scheme: dark;
@@ -56,19 +56,29 @@ body {
   background: var(--bg);
   color: var(--ink);
   font: 16px/1.55 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
+p { text-wrap: pretty; }
 h1, h2 { font-family: var(--font-serif); font-weight: 400; margin: 0; text-wrap: balance; }
 button { cursor: pointer; font: inherit; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--clay-strong); outline-offset: 2px; }
 input, select, textarea { color: var(--ink); }
 
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 20px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
 .btn { font-weight: 500; border-radius: 10px; padding: 8px 14px; background: var(--card); color: var(--ink); border: 1px solid var(--line); }
 .btn:hover { background: var(--soft); }
 .btn-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; min-width: 40px; padding: 0 12px; }
 .btn-main { font-weight: 500; border-radius: 10px; padding: 10px 16px; background: var(--clay-strong); color: #fff; border: 0; }
-.btn-main:disabled { opacity: .5; cursor: default; }
-.pill { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.btn-main:disabled, .btn:disabled { opacity: .5; cursor: default; }
+.btn:disabled:hover { background: var(--card); }
+.btn:active:not(:disabled), .btn-main:active:not(:disabled) { transform: scale(.97); }
+@media (pointer: coarse) { .btn, .btn-main { min-height: 44px; } .btn-icon { min-width: 44px; } }
+/* inputs sit lower than the surface around them */
+@layer components {
+  .field { border-radius: 10px; border: 1px solid var(--line); background: var(--soft); padding: 10px 12px; font-size: 16px; }
+  .field::placeholder { color: var(--ink-2); }
+}
+.pill { font-variant-numeric: tabular-nums; display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 500; white-space: nowrap; }
 .pill.good { color: var(--good); background: var(--good-bg); }
 .pill.bad { color: var(--bad); background: var(--bad-bg); }
 .pill.watch { color: var(--watch); background: var(--watch-bg); }
@@ -76,6 +86,7 @@ input, select, textarea { color: var(--ink); }
 .tnum { font-variant-numeric: tabular-nums; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .fade { animation: fade .3s ease both; }
-  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .slide-in { animation: slide-in .22s cubic-bezier(0.23, 1, 0.32, 1) both; }
+  @keyframes slide-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+  .btn, .btn-main { transition: background-color .15s, border-color .15s, color .15s, transform .12s cubic-bezier(0.23, 1, 0.32, 1); }
 }

@@ -5,7 +5,7 @@ import { TIER_DAYS, WORLDS } from "@/lib/config";
 import type { Person } from "@/lib/types";
 import { call, useAct } from "./act";
 
-const input = "w-full rounded-[10px] border border-line bg-card px-3 py-2.5 text-[16px]";
+const input = "field w-full";
 
 type Fields = {
   name: string; tier: string; world: string; company: string; role: string; howMet: string; caresAbout: string;
