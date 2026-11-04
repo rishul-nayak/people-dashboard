@@ -7,6 +7,8 @@ import { COOKIE, same, tokenFor } from "./lib/auth";
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (pathname === "/login" || pathname === "/api/login") return NextResponse.next();
+  // Meta and Vercel cron cannot type a passcode. These two check their own secret (signature / bearer token).
+  if (pathname === "/api/whatsapp" || pathname === "/api/cron/daily") return NextResponse.next();
 
   const passcode = process.env.PASSCODE;
   if (!passcode) {

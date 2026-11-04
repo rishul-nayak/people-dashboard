@@ -44,6 +44,8 @@ export type Data = {
   owed: Owed[];
   interactions: Interaction[];
   today: string;
-  source: "notion" | "demo";
+  source: "db" | "notion" | "demo";
   note: string | null;
+  /** The database is empty and a Notion token is set: show the import button. */
+  canImport?: boolean;
 };

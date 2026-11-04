@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+import { Check } from "lucide-react";
 import { addedSince, openOwed, pingToday } from "@/lib/today";
 import type { Data } from "@/lib/types";
 import { niceDate } from "@/lib/util";
+import { call, useAct } from "./act";
 
 function Tile({ label, value, tag, tone }: { label: string; value: number; tag: string; tone: "good" | "bad" | "watch" | "plain" }) {
   return (
@@ -22,6 +24,8 @@ function latePill(late: number) {
 }
 
 export function TodayView({ data, onOpen }: { data: Data; onOpen: (id: string) => void }) {
+  const editable = data.source === "db";
+  const { run, busy, error } = useAct();
   const pings = useMemo(() => pingToday(data.people, data.today), [data]);
   const owed = useMemo(() => openOwed(data.owed, data.people, data.today), [data]);
   const iOwe = owed.filter((o) => o.item.who === "Me");
@@ -42,13 +46,13 @@ export function TodayView({ data, onOpen }: { data: Data; onOpen: (id: string) =
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card fade flex flex-col gap-3">
           <h2 className="text-[22px]">Message these people today</h2>
-          {pings.length === 0 && <p className="m-0 text-ink-2">No one is due. Add someone with the Telegram bot.</p>}
+          {pings.length === 0 && <p className="m-0 text-ink-2">No one is due. Send a WhatsApp note about someone you met.</p>}
           <ul className="m-0 flex list-none flex-col gap-1 p-0">
             {pings.slice(0, 5).map(({ person, late, reason }) => (
-              <li key={person.id}>
+              <li key={person.id} className="flex items-start gap-1">
                 <button
                   onClick={() => onOpen(person.id)}
-                  className="flex w-full items-start justify-between gap-3 rounded-[10px] border-0 bg-transparent px-2 py-2 text-left hover:bg-soft"
+                  className="flex min-w-0 flex-1 items-start justify-between gap-3 rounded-[10px] border-0 bg-transparent px-2 py-2 text-left hover:bg-soft"
                 >
                   <span className="min-w-0">
                     <span className="font-medium">{person.name}</span>
@@ -57,6 +61,11 @@ export function TodayView({ data, onOpen }: { data: Data; onOpen: (id: string) =
                   </span>
                   {latePill(late)}
                 </button>
+                {editable && (
+                  <button className="btn mt-1 !px-2 !py-1.5" disabled={busy} aria-label={`I messaged ${person.name}`} title="I messaged them" onClick={() => run(() => call(`/api/people/${person.id}/touch`, "POST", {}))}>
+                    <Check size={16} />
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -68,11 +77,11 @@ export function TodayView({ data, onOpen }: { data: Data; onOpen: (id: string) =
           {owed.length === 0 && <p className="m-0 text-ink-2">No open promises.</p>}
           <ul className="m-0 flex list-none flex-col gap-1 p-0">
             {owed.slice(0, 5).map(({ item, person, late }) => (
-              <li key={item.id}>
+              <li key={item.id} className="flex items-start gap-1">
                 <button
                   onClick={() => person && onOpen(person.id)}
                   disabled={!person}
-                  className="flex w-full items-start justify-between gap-3 rounded-[10px] border-0 bg-transparent px-2 py-2 text-left hover:bg-soft"
+                  className="flex min-w-0 flex-1 items-start justify-between gap-3 rounded-[10px] border-0 bg-transparent px-2 py-2 text-left hover:bg-soft"
                 >
                   <span className="min-w-0">
                     <span className="font-medium">{item.what}</span>
@@ -82,12 +91,18 @@ export function TodayView({ data, onOpen }: { data: Data; onOpen: (id: string) =
                   </span>
                   {item.due ? (late > 0 ? <span className="pill bad">{late} day{late === 1 ? "" : "s"} late</span> : <span className={`pill ${late === 0 ? "watch" : "plain"}`}>{late === 0 ? "Today" : niceDate(item.due)}</span>) : null}
                 </button>
+                {editable && (
+                  <button className="btn mt-1 !px-2 !py-1.5" disabled={busy} aria-label={`Mark done: ${item.what}`} title="Done" onClick={() => run(() => call(`/api/promises/${item.id}`, "PATCH", { done: true }))}>
+                    <Check size={16} />
+                  </button>
+                )}
               </li>
             ))}
           </ul>
-          {owed.length > 5 && <p className="m-0 text-[13px] text-ink-2">{owed.length - 5} more are in Notion.</p>}
+          {owed.length > 5 && <p className="m-0 text-[13px] text-ink-2">{owed.length - 5} more open promises.</p>}
         </section>
       </div>
+      {error && <p className="m-0 text-[13px] text-bad" role="alert">{error}</p>}
     </div>
   );
 }

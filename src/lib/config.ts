@@ -47,3 +47,19 @@ export const IDS = {
 };
 
 export const TIMEZONE = "Asia/Kolkata";
+
+// ---- Capture (WhatsApp notes -> database). Edit and push; the next message uses it. ----
+export const OWNER = {
+  name: "Rishul",
+  // Rare links the AI looks for when it writes "common ground". Change them any time.
+  links: ["Jabalpur", "Madhya Pradesh", "IIT Bombay", "economics", "AI agents"],
+};
+
+export const CAPTURE = {
+  newTier: "Tier 1", // new contacts stay here until you move them
+  firstFollowUpDays: 1, // a new person's first "next contact" is the 24-hour follow-up
+  promiseDueDays: { me: 2, them: 7 } as Record<"me" | "them", number>, // when the note gives no date
+  eventHours: 4, // "event X" tags every note for this long
+  pendingMaxTries: 3, // a note Gemini could not read is retried this many times
+  models: { main: "gemini-3.5-flash-lite", fallback: "gemini-3.6-flash" },
+};

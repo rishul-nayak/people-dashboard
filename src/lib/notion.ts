@@ -100,6 +100,20 @@ function toInteraction(p: Page): Interaction | null {
   };
 }
 
+/** Raw read of the three Notion databases. Used by the one-time import. */
+export async function readNotion(token: string): Promise<Pick<Data, "people" | "owed" | "interactions">> {
+  const [people, owed, inter] = await Promise.all([
+    queryAll(IDS.people, token),
+    queryAll(IDS.promises, token),
+    queryAll(IDS.interactions, token),
+  ]);
+  return {
+    people: people.map(toPerson),
+    owed: owed.map(toOwed),
+    interactions: inter.map(toInteraction).filter((x): x is Interaction => x !== null),
+  };
+}
+
 export async function loadData(forceDemo = false): Promise<Data> {
   const today = todayIso();
   const token = process.env.NOTION_TOKEN;

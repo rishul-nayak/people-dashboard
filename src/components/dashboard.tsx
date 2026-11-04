@@ -2,10 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ListChecks, Moon, Network, Sun, Users } from "lucide-react";
+import { ListChecks, Moon, Network, Plus, Sun, Users } from "lucide-react";
 import { pingToday, openOwed } from "@/lib/today";
 import type { Data } from "@/lib/types";
 import { longDate } from "@/lib/util";
+import { AddPerson } from "./add-person";
+import { call, useAct } from "./act";
 import { PeopleTable } from "./people-table";
 import { PersonCard } from "./person-card";
 import { TodayView } from "./today-view";
@@ -28,10 +30,15 @@ export function Dashboard({ data }: { data: Data }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [world, setWorld] = useState("");
   const [dark, setDark] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const imp = useAct();
+  const editable = data.source === "db";
 
   useEffect(() => {
     const el = document.documentElement;
     const t = el.getAttribute("data-theme");
+    // reading the saved theme after the first paint, so server and browser HTML match
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDark(t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches);
   }, []);
 
@@ -77,10 +84,19 @@ export function Dashboard({ data }: { data: Data }) {
       {data.note && (
         <div className="pill watch !whitespace-normal !rounded-[10px] !px-3 !py-2">{data.note}</div>
       )}
+      {data.canImport && (
+        <div className="card flex flex-wrap items-center justify-between gap-3">
+          <span>Copy your people, promises and talks from Notion into the database. Safe to press twice.</span>
+          <button className="btn-main" disabled={imp.busy} onClick={() => imp.run(() => call("/api/import-notion", "POST", {}))}>
+            {imp.busy ? "Importing" : "Import from Notion"}
+          </button>
+          {imp.error && <span className="w-full text-[13px] text-bad" role="alert">{imp.error}</span>}
+        </div>
+      )}
 
       <h1 className="text-[32px] leading-tight">{title}</h1>
 
-      <div role="tablist" className="flex flex-wrap gap-2">
+      <div role="tablist" className="flex flex-wrap items-center gap-2">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -93,6 +109,11 @@ export function Dashboard({ data }: { data: Data }) {
             {id === "map" ? (<><span className="sm:hidden">Map</span><span className="hidden sm:inline">Network map</span></>) : label}
           </button>
         ))}
+        {editable && (
+          <button className="btn ml-auto inline-flex items-center gap-2" onClick={() => setAdding(true)}>
+            <Plus size={16} /> Add person
+          </button>
+        )}
       </div>
 
       {tab === "today" && <TodayView data={data} onOpen={setSelected} />}
@@ -116,7 +137,8 @@ export function Dashboard({ data }: { data: Data }) {
 
       {tab === "people" && <PeopleTable data={data} onOpen={setSelected} />}
 
-      {person && <PersonCard person={person} data={data} onClose={close} />}
+      {person && <PersonCard key={person.id} person={person} data={data} onClose={close} />}
+      {adding && <AddPerson onClose={() => setAdding(false)} />}
     </div>
   );
 }

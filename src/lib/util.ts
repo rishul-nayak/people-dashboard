@@ -49,6 +49,7 @@ export function lines(text: string): string[] {
   return text.split("\n").map((s) => s.trim()).filter(Boolean);
 }
 
+/** Removes a leading date: "2026-11-04: x", "2026-11-04 - x" or "[2026-11-04] x". */
 export function stripDate(line: string): string {
-  return line.replace(/^\d{4}-\d{2}-\d{2}\s*[:\-–]\s*/, "").trim();
+  return line.replace(/^\[?\d{4}-\d{2}-\d{2}\]?\s*[:\-–]?\s*/, "").trim();
 }
