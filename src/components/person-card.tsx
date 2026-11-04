@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Check, ExternalLink, Link as LinkIcon, Mail, Pencil, Phone, Trash2, X } from "lucide-react";
 import { TIER_DAYS } from "@/lib/config";
 import type { Data, Person } from "@/lib/types";
 import { daysBetween, niceDate, notionUrl, relative } from "@/lib/util";
 import { call, useAct } from "./act";
+import { useDialog } from "./dialog";
 import { PersonForm } from "./person-form";
 
 function Field({ label, text }: { label: string; text: string }) {
@@ -37,11 +38,7 @@ export function PersonCard({ person, data, onClose }: { person: Person; data: Da
   const [who, setWho] = useState<"Me" | "Them">("Me");
   const { run, busy, error } = useAct();
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  const panel = useDialog<HTMLElement>(onClose);
 
   const next = nextLabel(person, data.today);
   const recent = data.interactions
@@ -64,6 +61,9 @@ export function PersonCard({ person, data, onClose }: { person: Person; data: Da
     <>
       <div className="fixed inset-0 z-30 bg-black/30 sm:bg-transparent" onClick={onClose} aria-hidden />
       <aside
+        ref={panel}
+        role="dialog"
+        aria-modal="true"
         className="fade fixed right-0 top-0 z-40 flex h-full w-full flex-col gap-4 overflow-y-auto border-l border-line bg-card p-5 shadow-[0_0_40px_rgba(0,0,0,.12)] sm:w-[420px]"
         aria-label={`${person.name} details`}
       >
@@ -72,13 +72,37 @@ export function PersonCard({ person, data, onClose }: { person: Person; data: Da
             <h2 className="text-[22px] leading-tight">{person.name}</h2>
             {sub && <div className="text-ink-2">{sub}</div>}
           </div>
-          <button className="btn !p-2" onClick={onClose} aria-label="Close">
-            <X size={18} />
+          <button className="btn btn-icon shrink-0" onClick={onClose} aria-label="Close">
+            <X size={18} aria-hidden />
           </button>
         </div>
 
         {editing ? (
-          <PersonForm person={person} onDone={() => setEditing(false)} onCancel={() => setEditing(false)} />
+          <>
+            <PersonForm person={person} onDone={() => setEditing(false)} onCancel={() => setEditing(false)} />
+            <div className="mt-2 flex flex-col gap-2 border-t border-line pt-4">
+              {!sure ? (
+                <button className="btn inline-flex items-center gap-2 self-start" onClick={() => setSure(true)}>
+                  <Trash2 size={16} /> Delete {person.name}
+                </button>
+              ) : (
+                <>
+                  <p className="m-0 text-[13px] text-ink-2">This removes {person.name} and their links to other people. Open promises stay, with no name on them. It cannot be undone.</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      className="btn inline-flex items-center gap-2 !border-bad !text-bad"
+                      disabled={busy}
+                      onClick={async () => { if (await run(() => call(`/api/people/${person.id}`, "DELETE"))) onClose(); }}
+                    >
+                      <Trash2 size={16} /> Delete for good
+                    </button>
+                    <button className="btn" onClick={() => setSure(false)}>Keep</button>
+                  </div>
+                  {error && <p className="m-0 text-[13px] text-bad" role="alert">{error}</p>}
+                </>
+              )}
+            </div>
+          </>
         ) : (
           <>
             <div className="flex flex-wrap gap-2">
@@ -197,23 +221,6 @@ export function PersonCard({ person, data, onClose }: { person: Person; data: Da
                 <a className="btn inline-flex items-center gap-2" href={notionUrl(person.id)} target="_blank" rel="noopener noreferrer">
                   <ExternalLink size={16} /> Open in Notion
                 </a>
-              )}
-              {editable && !sure && (
-                <button className="btn inline-flex items-center gap-2" onClick={() => setSure(true)}>
-                  <Trash2 size={16} /> Delete
-                </button>
-              )}
-              {editable && sure && (
-                <>
-                  <button
-                    className="btn inline-flex items-center gap-2 !border-bad !text-bad"
-                    disabled={busy}
-                    onClick={async () => { if (await run(() => call(`/api/people/${person.id}`, "DELETE"))) onClose(); }}
-                  >
-                    <Trash2 size={16} /> Delete {person.name} for good
-                  </button>
-                  <button className="btn" onClick={() => setSure(false)}>Keep</button>
-                </>
               )}
             </div>
           </>

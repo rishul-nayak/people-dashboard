@@ -34,6 +34,8 @@ export default function Login() {
       <form onSubmit={submit} className="flex flex-col gap-3">
         <input
           type="password"
+          name="passcode"
+          autoComplete="current-password"
           autoFocus
           value={value}
           onChange={(e) => setValue(e.target.value)}

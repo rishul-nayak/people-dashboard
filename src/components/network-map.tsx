@@ -37,6 +37,7 @@ export default function NetworkMap({
   const fitted = useRef(false);
 
   const graph = useMemo(() => buildGraph(people), [people]);
+  const few = graph.nodes.length <= 14; // small map: name every dot
   const ranked = useMemo(() => topWorlds(people).slice(0, 3).map((x) => x.name), [people]);
 
   useEffect(() => {
@@ -83,7 +84,7 @@ export default function NetworkMap({
         backgroundColor="rgba(0,0,0,0)"
         cooldownTicks={120}
         onEngineStop={() => {
-          if (!fitted.current) { fitted.current = true; fg.current?.zoomToFit(400, 24); }
+          if (!fitted.current) { fitted.current = true; fg.current?.zoomToFit(400, few ? 40 : 24); }
         }}
         nodeRelSize={4}
         nodeLabel={(n: any) => (n.me ? "You" : esc(`${n.person.name}${n.person.company ? " · " + n.person.company : ""}`))}
@@ -113,7 +114,7 @@ export default function NetworkMap({
             ctx.strokeStyle = pal.clay;
             ctx.stroke();
           }
-          const big = n.me || ["Ally", "Inner circle"].includes(n.person!.tier);
+          const big = n.me || few || ["Ally", "Inner circle"].includes(n.person!.tier);
           if (!dim && (big || picked || hover === n.id || scale > 1.6)) {
             const fs = Math.max(11 / scale, 3);
             ctx.font = `${fs}px ui-sans-serif, system-ui, sans-serif`;
@@ -123,9 +124,10 @@ export default function NetworkMap({
             ctx.lineJoin = "round";
             ctx.lineWidth = 3 / scale;
             ctx.strokeStyle = pal.bg; // halo so the name stays readable over lines
-            ctx.strokeText(n.name, n.x, ty);
+            const label = n.name.length > 18 ? n.name.slice(0, 17) + "…" : n.name;
+            ctx.strokeText(label, n.x, ty);
             ctx.fillStyle = pal.ink;
-            ctx.fillText(n.name, n.x, ty);
+            ctx.fillText(label, n.x, ty);
           }
           ctx.globalAlpha = 1;
         }}

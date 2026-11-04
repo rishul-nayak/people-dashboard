@@ -5,7 +5,7 @@
   --bg: #fff; --soft: #f9f9f9; --card: #fff;
   --ink: rgba(0,0,0,.9); --ink-2: rgba(0,0,0,.6); --ink-3: rgba(0,0,0,.47);
   --line: rgba(0,0,0,.12); --shadow: 0 4px 20px rgba(0,0,0,.075);
-  --clay: #d97757; --clay-strong: #c6613f;
+  --clay: #d97757; --clay-strong: #b9562f;
   --good: #006c10; --good-bg: rgba(16,161,34,.14);
   --bad: #a42528; --bad-bg: rgba(220,60,61,.12);
   --watch: #794c02; --watch-bg: rgba(251,179,21,.16);
@@ -59,11 +59,13 @@ body {
 }
 h1, h2 { font-family: var(--font-serif); font-weight: 400; margin: 0; text-wrap: balance; }
 button { cursor: pointer; font: inherit; }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--clay-strong); outline-offset: 2px; }
+input, select, textarea { color: var(--ink); }
 
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 20px; }
 .btn { font-weight: 500; border-radius: 10px; padding: 8px 14px; background: var(--card); color: var(--ink); border: 1px solid var(--line); }
 .btn:hover { background: var(--soft); }
+.btn-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; min-width: 40px; padding: 0 12px; }
 .btn-main { font-weight: 500; border-radius: 10px; padding: 10px 16px; background: var(--clay-strong); color: #fff; border: 0; }
 .btn-main:disabled { opacity: .5; cursor: default; }
 .pill { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 500; white-space: nowrap; }
@@ -71,7 +73,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .pill.bad { color: var(--bad); background: var(--bad-bg); }
 .pill.watch { color: var(--watch); background: var(--watch-bg); }
 .pill.plain { color: var(--ink-2); background: var(--soft); border: 1px solid var(--line); }
-.num { font-size: 40px; font-weight: 500; line-height: 1; white-space: nowrap; }
+.tnum { font-variant-numeric: tabular-nums; }
 
 @media (prefers-reduced-motion: no-preference) {
   .fade { animation: fade .3s ease both; }
